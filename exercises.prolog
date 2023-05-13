@@ -72,7 +72,6 @@ all_bigger(cons(H1, T1), cons(H2, T2)) :- gt(H1, H2), all_bigger(T1, T2).
 sublist(nil, L).
 sublist(cons(H, T), L) :- search(H, L), sublist(T, L).
 
-
 % seq(N,E, List ) --> List is [E,E ,... ,E] with size N
 seq(zero, _ , nil).
 seq(s(N), E, cons(E ,T)) :- seq(N , E, T).
@@ -92,15 +91,21 @@ seqR2(s(N), X) :- seqR2(N, L), last(L, N, X).
 last(cons(H, nil), H).
 last(cons(H, T), L) :- last(T, L).
 
+% ----------------------------------------------------------------------
+
 % map [a, b, c, ...] --> [a+1, b+1, c+1, ...]  
 f(X, Y) :- sum(X, s(zero), Y). % attempt to generalize...
 map(nil, nil).
 map(cons(H, T), cons(H2, R)) :- map(T, R), f(H, H2). 
+% USAGE: map(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), R).
+%        map(nil, R).
 
 % all elements grater than zero.
 filter(nil, nil).
 filter(cons(H, T), cons(H, R)) :- gt(H, zero), filter(T, R).
 filter(cons(H, T), R) :- gte(zero, H), filter(T, R).
+% USAGE: filter(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), R).
+%        filter(cons(zero, cons(zero, nil)), R).
 
 % size of a list.
 count(nil, zero).
@@ -108,36 +113,53 @@ count(cons(H, T), s(N)) :- count(T, N).
 
 % how many elements grater than zero?
 count_gt(L, R) :- filter(L, R1), count(R1, R).
+% USAGE: count_gt(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), R).
+%        count_gt(cons(zero, cons(zero, nil)), R).
 
 % find elements grater than zero
 find_gt(L, R) :- filter(L, R1), search(R, R1).
+% USAGE: count_gt(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), R).
+%        count_gt(cons(zero, cons(zero, nil)), R).
 
 % list without the N last elements 
 drop_right(L, N, nil) :- count(L, N).
 drop_right(cons(H, T), N, cons(H, R)) :- drop_right(T, N, R).
+% USAGE: drop_right(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), s(zero), R).
+%        drop_right(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), zero, R).
+%        drop_right(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), s(s(zero)), R).        
 
 % drop element while they're grater than zero.
 drop_while_gt(nil, nil).
 drop_while_gt(cons(H, T), cons(H, T)) :- gte(zero, H).
 drop_while_gt(cons(H, T), R) :- gt(H, zero), drop_while_gt(T, R).
+% USAGE: drop_while_gt(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), R).
 
 % partion list in two w.r.t the first element grater than zero. 
 partition_gt(nil, nil, nil).
 partition_gt(cons(H, T), cons(H, A), B) :- gt(H, zero), partition_gt(T, A, B).
 partition_gt(cons(H, T), nil, cons(H, T)) :- gte(zero, H).
+% USAGE: partition_gt(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), A, B).        
 
 % reverse the list
-reversed(nil, nil).
-reversed(cons(H, T), R) :- reversed(T, R1), last(R1, H, R).
+reverse(nil, nil).
+reverse(cons(H, T), R) :- reverse(T, R1), last(R1, H, R).
+% USAGE: reverse(cons(a, cons(b, cons(c, nil))), R).
 
 % drop the first N elements
 drop(L, zero, L).
 drop(cons(H, T), s(N), R) :- drop(T, N, R).
+% USAGE: drop(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), s(zero), R).
+%        drop(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), zero, R).
+%        drop(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), s(s(zero)), R).        
 
 % take the first N elements
 take(L, zero, nil).
 take(cons(H, T), s(N), cons(H, R1)) :- take(T, N, R1).
+% USAGE: take(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), s(zero), R).
+%        take(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), zero, R).
+%        take(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), s(s(zero)), R).        
 
 % zip two lists together
 zip(nil, nil, nil).
 zip(cons(H1, T1), cons(H2, T2), cons((H1, H2), R)) :- zip(T1, T2, R).
+% USAGE: zip(cons(a, cons(b, cons(c, nil))), cons(d, cons(e, cons(f, nil))), R).
